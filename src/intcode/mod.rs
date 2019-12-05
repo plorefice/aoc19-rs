@@ -4,13 +4,15 @@ use std::str::FromStr;
 pub struct Intcode {
     memory: Vec<i64>,
     input: i64,
+    pc: usize,
 }
 
 impl Intcode {
     pub fn new(program: &str) -> Intcode {
         Intcode {
-            memory: Intcode::load(program),
+            memory: Intcode::parse(program),
             input: 0,
+            pc: 0,
         }
     }
 
@@ -29,27 +31,89 @@ impl Intcode {
     }
 
     pub fn run(&mut self) -> Vec<i64> {
-        let mut pc = 0;
+        let mut outs = Vec::with_capacity(16);
+
+        self.pc = 0;
 
         loop {
-            let ra = self.memory[pc + 1] as usize;
-            let rb = self.memory[pc + 2] as usize;
-            let rd = self.memory[pc + 3] as usize;
+            let op = self.memory[self.pc] as u64;
 
-            match self.memory[pc] {
-                1 => self.memory[rd] = self.memory[ra] + self.memory[rb],
-                2 => self.memory[rd] = self.memory[ra] * self.memory[rb],
+            let opc = op % 100;
+            let mode = op / 100;
+
+            match opc {
+                1 => {
+                    let ps = self.load_params(2, mode);
+                    let rd = self.memory[self.pc + 3] as usize;
+                    self.memory[rd] = ps[0] + ps[1];
+                    self.pc += 4;
+                }
+                2 => {
+                    let ps = self.load_params(2, mode);
+                    let rd = self.memory[self.pc + 3] as usize;
+                    self.memory[rd] = ps[0] * ps[1];
+                    self.pc += 4;
+                }
+                3 => {
+                    let rd = self.memory[self.pc + 1] as usize;
+                    self.memory[rd] = self.input;
+                    self.pc += 2;
+                }
+                4 => {
+                    let ps = self.load_params(1, mode);
+                    outs.push(ps[0]);
+                    self.pc += 2;
+                }
+                5 => {
+                    let ps = self.load_params(2, mode);
+                    if ps[0] != 0 {
+                        self.pc = ps[1] as usize;
+                    } else {
+                        self.pc += 3;
+                    }
+                }
+                6 => {
+                    let ps = self.load_params(2, mode);
+                    if ps[0] == 0 {
+                        self.pc = ps[1] as usize;
+                    } else {
+                        self.pc += 3;
+                    }
+                }
+                7 => {
+                    let ps = self.load_params(2, mode);
+                    let rd = self.memory[self.pc + 3] as usize;
+                    self.memory[rd] = (ps[0] < ps[1]) as i64;
+                    self.pc += 4;
+                }
+                8 => {
+                    let ps = self.load_params(2, mode);
+                    let rd = self.memory[self.pc + 3] as usize;
+                    self.memory[rd] = (ps[0] == ps[1]) as i64;
+                    self.pc += 4;
+                }
                 99 => break,
-                _ => panic!("unexpected opcode: {}", self.memory[pc]),
+                _ => panic!("unexpected opcode: {}", self.memory[self.pc]),
             }
-
-            pc += 4;
         }
 
-        vec![]
+        outs
     }
 
-    fn load(program: &str) -> Vec<i64> {
+    fn load_params(&self, n: usize, mode: u64) -> Vec<i64> {
+        (self.pc + 1..=self.pc + n)
+            .fold((mode, Vec::with_capacity(n)), |(mode, mut v), idx| {
+                if mode % 10 == 0 {
+                    v.push(self.memory[self.memory[idx] as usize]);
+                } else {
+                    v.push(self.memory[idx]);
+                }
+                (mode / 10, v)
+            })
+            .1
+    }
+
+    fn parse(program: &str) -> Vec<i64> {
         program
             .split(',')
             .map(|s| i64::from_str(s).unwrap())
