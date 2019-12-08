@@ -2,7 +2,7 @@ use crate::intcode::Intcode;
 
 #[allow(unused)]
 fn part_1(s: &str) -> i64 {
-    let out = Intcode::new(s).inputs(&[1]).run();
+    let out = Intcode::new(s).inputs(&[1]).run().0;
 
     if out[..out.len() - 2].iter().any(|e| *e != 0) {
         panic!("non-zero intermediate results");
@@ -13,7 +13,7 @@ fn part_1(s: &str) -> i64 {
 
 #[allow(unused)]
 fn part_2(s: &str) -> i64 {
-    Intcode::new(s).inputs(&[5]).run()[0]
+    Intcode::new(s).inputs(&[5]).run().0[0]
 }
 
 #[cfg(test)]

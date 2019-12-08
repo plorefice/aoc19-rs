@@ -1,23 +1,30 @@
+use std::collections::VecDeque;
 use std::str::FromStr;
 
 #[derive(Clone)]
 pub struct Intcode {
     memory: Vec<i64>,
-    inputs: Vec<i64>,
+    inputs: VecDeque<i64>,
     pc: usize,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum StopCondition {
+    Halt,
+    NeedInput,
 }
 
 impl Intcode {
     pub fn new(program: &str) -> Intcode {
         Intcode {
             memory: Intcode::parse(program),
-            inputs: vec![],
+            inputs: VecDeque::new(),
             pc: 0,
         }
     }
 
     pub fn inputs(mut self, inputs: &[i64]) -> Intcode {
-        self.inputs = inputs.to_vec();
+        self.inputs.extend(inputs);
         self
     }
 
@@ -30,11 +37,12 @@ impl Intcode {
         self.memory[pos]
     }
 
-    pub fn run(&mut self) -> Vec<i64> {
-        let mut outs = Vec::with_capacity(16);
-        let mut ins = self.inputs.iter();
+    pub fn push_input(&mut self, input: i64) {
+        self.inputs.push_back(input);
+    }
 
-        self.pc = 0;
+    pub fn run(&mut self) -> (Vec<i64>, StopCondition) {
+        let mut outs = Vec::with_capacity(16);
 
         loop {
             let op = self.memory[self.pc] as u64;
@@ -57,8 +65,12 @@ impl Intcode {
                 }
                 3 => {
                     let rd = self.memory[self.pc + 1] as usize;
-                    self.memory[rd] = *ins.next().unwrap();
-                    self.pc += 2;
+                    if let Some(input) = self.inputs.pop_front() {
+                        self.memory[rd] = input;
+                        self.pc += 2;
+                    } else {
+                        return (outs, StopCondition::NeedInput);
+                    }
                 }
                 4 => {
                     let ps = self.load_params(1, mode);
@@ -98,7 +110,7 @@ impl Intcode {
             }
         }
 
-        outs
+        (outs, StopCondition::Halt)
     }
 
     fn load_params(&self, n: usize, mode: u64) -> Vec<i64> {
