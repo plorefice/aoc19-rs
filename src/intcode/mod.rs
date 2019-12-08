@@ -3,7 +3,7 @@ use std::str::FromStr;
 #[derive(Clone)]
 pub struct Intcode {
     memory: Vec<i64>,
-    input: i64,
+    inputs: Vec<i64>,
     pc: usize,
 }
 
@@ -11,13 +11,13 @@ impl Intcode {
     pub fn new(program: &str) -> Intcode {
         Intcode {
             memory: Intcode::parse(program),
-            input: 0,
+            inputs: vec![],
             pc: 0,
         }
     }
 
-    pub fn input(mut self, input: i64) -> Intcode {
-        self.input = input;
+    pub fn inputs(mut self, inputs: &[i64]) -> Intcode {
+        self.inputs = inputs.to_vec();
         self
     }
 
@@ -32,6 +32,7 @@ impl Intcode {
 
     pub fn run(&mut self) -> Vec<i64> {
         let mut outs = Vec::with_capacity(16);
+        let mut ins = self.inputs.iter();
 
         self.pc = 0;
 
@@ -56,7 +57,7 @@ impl Intcode {
                 }
                 3 => {
                     let rd = self.memory[self.pc + 1] as usize;
-                    self.memory[rd] = self.input;
+                    self.memory[rd] = *ins.next().unwrap();
                     self.pc += 2;
                 }
                 4 => {
