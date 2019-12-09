@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use std::convert::{TryFrom, TryInto};
 use std::str::FromStr;
 
 pub type Word = i128;
@@ -56,10 +57,10 @@ impl Intcode {
         let mut outs = Vec::with_capacity(16);
 
         loop {
-            let op = self.memory[self.pc] as u64;
+            let op = self.memory[self.pc];
 
             let opc = op % 100;
-            let mode = op / 100;
+            let mode = (op / 100).try_into().unwrap();
 
             match opc {
                 1 => {
@@ -91,7 +92,7 @@ impl Intcode {
                 5 => {
                     let ps = self.args(2, mode);
                     if self.rd(ps[0]) != 0 {
-                        self.pc = self.rd(ps[1]) as usize;
+                        self.pc = self.rd(ps[1]).try_into().unwrap();
                     } else {
                         self.pc += 3;
                     }
@@ -99,7 +100,7 @@ impl Intcode {
                 6 => {
                     let ps = self.args(2, mode);
                     if self.rd(ps[0]) == 0 {
-                        self.pc = self.rd(ps[1]) as usize;
+                        self.pc = self.rd(ps[1]).try_into().unwrap();
                     } else {
                         self.pc += 3;
                     }
@@ -107,18 +108,20 @@ impl Intcode {
                 7 => {
                     let ps = self.args(3, mode);
                     let (a, b) = (self.rd(ps[0]), self.rd(ps[1]));
-                    self.wr(ps[2], (a < b) as Word);
+                    self.wr(ps[2], (a < b).try_into().unwrap());
                     self.pc += 4;
                 }
                 8 => {
                     let ps = self.args(3, mode);
                     let (a, b) = (self.rd(ps[0]), self.rd(ps[1]));
-                    self.wr(ps[2], (a == b) as Word);
+                    self.wr(ps[2], (a == b).try_into().unwrap());
                     self.pc += 4;
                 }
                 9 => {
                     let ps = self.args(1, mode);
-                    self.rb = (self.rb as Word + self.rd(ps[0])) as usize;
+                    self.rb = (Word::try_from(self.rb).unwrap() + self.rd(ps[0]))
+                        .try_into()
+                        .unwrap();
                     self.pc += 2;
                 }
                 99 => break,
@@ -132,7 +135,9 @@ impl Intcode {
     fn rd(&mut self, arg: Argument) -> Word {
         match arg {
             Argument::Absolute(pos) => self.memory[pos],
-            Argument::Relative(pos) => self.memory[(self.rb as isize + pos) as usize],
+            Argument::Relative(pos) => {
+                self.memory[usize::try_from(isize::try_from(self.rb).unwrap() + pos).unwrap()]
+            }
             Argument::Parameter(p) => p,
         }
     }
@@ -146,7 +151,7 @@ impl Intcode {
                 self.memory[pos] = w;
             }
             Argument::Relative(pos) => {
-                let idx = (self.rb as isize + pos) as usize;
+                let idx = usize::try_from(isize::try_from(self.rb).unwrap() + pos).unwrap();
                 if idx >= self.memory.len() {
                     self.memory.resize(idx + 1, 0);
                 }
@@ -162,9 +167,9 @@ impl Intcode {
                 let n = self.memory[idx];
 
                 let arg = match mode % 10 {
-                    0 => Argument::Absolute(n as usize),
+                    0 => Argument::Absolute(n.try_into().unwrap()),
                     1 => Argument::Parameter(n),
-                    2 => Argument::Relative(n as isize),
+                    2 => Argument::Relative(n.try_into().unwrap()),
                     _ => panic!("invalid argument mode"),
                 };
 
