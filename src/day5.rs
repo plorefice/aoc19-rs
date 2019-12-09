@@ -8,12 +8,12 @@ fn part_1(s: &str) -> i64 {
         panic!("non-zero intermediate results");
     }
 
-    *out.last().unwrap()
+    *out.last().unwrap() as i64
 }
 
 #[allow(unused)]
 fn part_2(s: &str) -> i64 {
-    Intcode::new(s).inputs(&[5]).run().0[0]
+    Intcode::new(s).inputs(&[5]).run().0[0] as i64
 }
 
 #[cfg(test)]

@@ -15,7 +15,7 @@ fn part_1(s: &str) -> i64 {
         }
         thrust = thrust.max(output);
     }
-    thrust
+    thrust as i64
 }
 
 #[allow(unused)]
@@ -43,7 +43,7 @@ fn part_2(s: &str) -> i64 {
         }
         thrust = thrust.max(output);
     }
-    thrust
+    thrust as i64
 }
 
 #[cfg(test)]

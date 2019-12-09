@@ -4,7 +4,7 @@ use crate::intcode::Intcode;
 fn part_1(s: &str) -> i64 {
     let mut ic = Intcode::new(s).update(1, 12).update(2, 2);
     ic.run();
-    ic.value(0)
+    ic.value(0) as i64
 }
 
 #[allow(unused)]
@@ -18,7 +18,7 @@ fn part_2(s: &str) -> i64 {
             ic.run();
 
             if ic.value(0) == 19_690_720 {
-                return 100 * noun + verb;
+                return (100 * noun + verb) as i64;
             }
         }
     }
