@@ -11,11 +11,11 @@ pub struct Intcode {
     rb: usize,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 enum Argument {
     Absolute(usize),
+    Relative(isize),
     Parameter(Word),
-    Relative(usize),
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -64,12 +64,14 @@ impl Intcode {
             match opc {
                 1 => {
                     let ps = self.args(3, mode);
-                    self.wr(ps[2], self.rd(ps[0]) + self.rd(ps[1]));
+                    let (a, b) = (self.rd(ps[0]), self.rd(ps[1]));
+                    self.wr(ps[2], a + b);
                     self.pc += 4;
                 }
                 2 => {
                     let ps = self.args(3, mode);
-                    self.wr(ps[2], self.rd(ps[0]) * self.rd(ps[1]));
+                    let (a, b) = (self.rd(ps[0]), self.rd(ps[1]));
+                    self.wr(ps[2], a * b);
                     self.pc += 4;
                 }
                 3 => {
@@ -104,17 +106,19 @@ impl Intcode {
                 }
                 7 => {
                     let ps = self.args(3, mode);
-                    self.wr(ps[2], (self.rd(ps[0]) < self.rd(ps[1])) as Word);
+                    let (a, b) = (self.rd(ps[0]), self.rd(ps[1]));
+                    self.wr(ps[2], (a < b) as Word);
                     self.pc += 4;
                 }
                 8 => {
                     let ps = self.args(3, mode);
-                    self.wr(ps[2], (self.rd(ps[0]) == self.rd(ps[1])) as Word);
+                    let (a, b) = (self.rd(ps[0]), self.rd(ps[1]));
+                    self.wr(ps[2], (a == b) as Word);
                     self.pc += 4;
                 }
                 9 => {
                     let ps = self.args(1, mode);
-                    self.rb = self.rd(ps[0]) as usize;
+                    self.rb = (self.rb as Word + self.rd(ps[0])) as usize;
                     self.pc += 2;
                 }
                 99 => break,
@@ -125,18 +129,29 @@ impl Intcode {
         (outs, StopCondition::Halt)
     }
 
-    fn rd(&self, arg: Argument) -> Word {
+    fn rd(&mut self, arg: Argument) -> Word {
         match arg {
             Argument::Absolute(pos) => self.memory[pos],
-            Argument::Relative(pos) => self.memory[self.rb + pos],
+            Argument::Relative(pos) => self.memory[(self.rb as isize + pos) as usize],
             Argument::Parameter(p) => p,
         }
     }
 
     fn wr(&mut self, arg: Argument, w: Word) {
         match arg {
-            Argument::Absolute(pos) => self.memory[pos] = w,
-            Argument::Relative(pos) => self.memory[self.rb + pos] = w,
+            Argument::Absolute(pos) => {
+                if pos >= self.memory.len() {
+                    self.memory.resize(pos + 1, 0);
+                }
+                self.memory[pos] = w;
+            }
+            Argument::Relative(pos) => {
+                let idx = (self.rb as isize + pos) as usize;
+                if idx >= self.memory.len() {
+                    self.memory.resize(idx + 1, 0);
+                }
+                self.memory[idx] = w;
+            }
             Argument::Parameter(_) => panic!("cannot write in parameter mode"),
         }
     }
@@ -149,7 +164,8 @@ impl Intcode {
                 let arg = match mode % 10 {
                     0 => Argument::Absolute(n as usize),
                     1 => Argument::Parameter(n),
-                    _ => Argument::Relative(n as usize),
+                    2 => Argument::Relative(n as isize),
+                    _ => panic!("invalid argument mode"),
                 };
 
                 v.push(arg);
