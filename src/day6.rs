@@ -56,13 +56,13 @@ mod tests {
 
     #[test]
     fn part_1_works() {
-        assert_eq!(part_1(include_str!("../res/6-eg0.txt")), 42);
+        assert_eq!(part_1(include_str!("../res/6-ex0.txt")), 42);
         assert_eq!(part_1(include_str!("../res/6.txt")), 261_306);
     }
 
     #[test]
     fn part_2_works() {
-        assert_eq!(part_2(include_str!("../res/6-eg1.txt")), 4);
+        assert_eq!(part_2(include_str!("../res/6-ex1.txt")), 4);
         assert_eq!(part_2(include_str!("../res/6.txt")), 382);
     }
 }
