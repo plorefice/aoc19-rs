@@ -134,9 +134,18 @@ impl Intcode {
 
     fn rd(&mut self, arg: Argument) -> Word {
         match arg {
-            Argument::Absolute(pos) => self.memory[pos],
+            Argument::Absolute(pos) => {
+                if pos >= self.memory.len() {
+                    self.memory.resize(pos + 1, 0);
+                }
+                self.memory[pos]
+            }
             Argument::Relative(pos) => {
-                self.memory[usize::try_from(isize::try_from(self.rb).unwrap() + pos).unwrap()]
+                let idx = usize::try_from(isize::try_from(self.rb).unwrap() + pos).unwrap();
+                if idx >= self.memory.len() {
+                    self.memory.resize(idx + 1, 0);
+                }
+                self.memory[idx]
             }
             Argument::Parameter(p) => p,
         }
