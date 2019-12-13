@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 pub type Word = i128;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Intcode {
     memory: Vec<Word>,
     inputs: VecDeque<Word>,
