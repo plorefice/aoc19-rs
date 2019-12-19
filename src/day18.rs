@@ -1,6 +1,6 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use itertools::Itertools;
 
-const KEYS: usize = 26 + 1;
+use std::collections::{HashMap, HashSet, VecDeque};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum Tile {
@@ -15,14 +15,24 @@ struct Maze {
     map: HashMap<(usize, usize), Tile>,
     poi: Vec<(usize, usize)>,
     pos: usize,
+    keys: usize,
+
+    best_distances: HashMap<(usize, u32), usize>,
+    visible_keys: HashMap<(usize, u32), HashMap<usize, usize>>,
 }
 
-impl From<&str> for Maze {
-    fn from(s: &str) -> Maze {
+impl Maze {
+    fn from(s: &str, keys: usize) -> Maze {
+        let keys = keys + 1;
+
         let mut maze = Maze {
             map: HashMap::new(),
-            poi: vec![(0, 0); KEYS],
+            poi: vec![(0, 0); keys],
             pos: 0,
+            keys,
+
+            best_distances: HashMap::new(),
+            visible_keys: HashMap::new(),
         };
 
         for (y, line) in s.lines().enumerate() {
@@ -56,66 +66,64 @@ impl From<&str> for Maze {
 
 impl Maze {
     fn solve(&mut self) -> usize {
-        let mut paths = vec![vec![(0, vec![]); KEYS]; KEYS];
         let mut best = std::usize::MAX;
+        let mut q = VecDeque::new();
 
-        for (ks, pos) in self.poi.iter().enumerate() {
-            for (ke, v) in self.shortest_path_to_keys(*pos).into_iter().enumerate() {
-                paths[ks][ke] = v;
+        q.push_back((0, 0, 1));
+
+        while let Some((pos, walked, opened)) = q.pop_front() {
+            if (opened & ((1 << self.keys) - 1)) == ((1 << self.keys) - 1) {
+                best = best.min(walked);
+                continue;
+            }
+
+            let best_path_to_here = *self
+                .best_distances
+                .entry((pos, opened))
+                .and_modify(|old| *old = walked.min(*old))
+                .or_insert(walked);
+
+            if best_path_to_here < walked {
+                continue;
+            }
+
+            if !self.visible_keys.contains_key(&(pos, opened)) {
+                self.visible_keys.insert(
+                    (pos, opened),
+                    self.find_reachable_keys(self.poi[pos], opened),
+                );
+            }
+
+            for (key, distance) in self.visible_keys[&(pos, opened)]
+                .iter()
+                .sorted_by_key(|(_, d)| *d)
+            {
+                let to_key = walked + distance;
+                if to_key >= best {
+                    continue;
+                }
+
+                q.push_back((*key, to_key, opened | (1 << *key)));
             }
         }
-
-        self.rsolve(0, 0, 0, &paths, &mut best);
 
         best
     }
 
-    fn rsolve(
-        &mut self,
-        pos: usize,
-        steps: usize,
-        mut visited: u32,
-        paths: &[Vec<(usize, Vec<usize>)>],
-        best: &mut usize,
-    ) {
-        visited |= 1 << pos;
-
-        if (visited & ((1 << KEYS) - 1)) == ((1 << KEYS) - 1) {
-            if steps < *best {
-                *best = steps;
-            }
-            return;
-        }
-
-        'outer: for next in 1..KEYS {
-            let (dst, required) = &paths[pos][next];
-
-            if (visited & (1 << next)) != 0 || steps + dst >= *best {
-                continue;
-            }
-
-            for key in required.iter() {
-                if (visited & (1 << *key)) == 0 {
-                    continue 'outer;
-                }
-            }
-
-            self.rsolve(next, steps + dst, visited, paths, best);
-        }
-    }
-
-    fn shortest_path_to_keys(&self, start: (usize, usize)) -> Vec<(usize, Vec<usize>)> {
-        let mut keys = vec![(0, vec![]); KEYS];
+    fn find_reachable_keys(&self, start: (usize, usize), opened: u32) -> HashMap<usize, usize> {
+        let mut keys = HashMap::with_capacity(self.keys);
 
         let mut distances = HashMap::with_capacity(self.poi.len());
         let mut visited = HashSet::with_capacity(self.map.len());
         let mut q = VecDeque::with_capacity(self.map.len());
 
-        distances.insert(start, (0, vec![]));
+        distances.insert(start, 0);
         visited.insert(start);
         q.push_back(start);
 
         while let Some(v) = q.pop_front() {
+            let steps = distances[&v];
+
             for &w in [
                 (v.0 - 1, v.1),
                 (v.0 + 1, v.1),
@@ -127,19 +135,20 @@ impl Maze {
                 if self.map[&w] == Tile::Wall {
                     continue;
                 }
-                if visited.get(&w).is_none() {
-                    let (steps, mut doors) = distances[&v].clone();
-
-                    if let Tile::Door(d) = self.map[&w] {
-                        doors.push(d);
+                if let Tile::Door(d) = self.map[&w] {
+                    if (opened & (1 << d)) == 0 {
+                        continue;
                     }
-
-                    distances.insert(w, (steps + 1, doors.clone()));
+                }
+                if visited.get(&w).is_none() {
+                    distances.insert(w, steps + 1);
                     visited.insert(w);
                     q.push_back(w);
 
                     if let Tile::Key(k) = self.map[&w] {
-                        keys[k] = (steps + 1, doors);
+                        if (opened & (1 << k)) == 0 {
+                            keys.insert(k, steps + 1);
+                        }
                     }
                 }
             }
@@ -150,8 +159,8 @@ impl Maze {
 }
 
 #[allow(unused)]
-fn part_1(s: &str) -> usize {
-    Maze::from(s).solve()
+fn part_1(s: &str, keys: usize) -> usize {
+    Maze::from(s, keys).solve()
 }
 
 #[cfg(test)]
@@ -160,12 +169,11 @@ mod tests {
 
     #[test]
     fn part_1_works() {
-        //assert_eq!(part_1(include_str!("../res/18-ex0.txt")), 8);
-        //assert_eq!(part_1(include_str!("../res/18-ex1.txt")), 86);
-        //assert_eq!(part_1(include_str!("../res/18-ex2.txt")), 132);
-        //assert_eq!(part_1(include_str!("../res/18-ex3.txt")), 136);
-        //assert_eq!(part_1(include_str!("../res/18-ex4.txt")), 81);
-
-        assert_eq!(part_1(include_str!("../res/18.txt")), 0);
+        // assert_eq!(part_1(include_str!("../res/18-ex0.txt"), 2), 8);
+        // assert_eq!(part_1(include_str!("../res/18-ex1.txt"), 6), 86);
+        // assert_eq!(part_1(include_str!("../res/18-ex2.txt"), 7), 132);
+        // assert_eq!(part_1(include_str!("../res/18-ex3.txt"), 16), 136);
+        // assert_eq!(part_1(include_str!("../res/18-ex4.txt"), 9), 81);
+        assert_eq!(part_1(include_str!("../res/18.txt"), 26), 0);
     }
 }
