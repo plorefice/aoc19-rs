@@ -174,6 +174,6 @@ mod tests {
         // assert_eq!(part_1(include_str!("../res/18-ex2.txt"), 7), 132);
         // assert_eq!(part_1(include_str!("../res/18-ex3.txt"), 16), 136);
         // assert_eq!(part_1(include_str!("../res/18-ex4.txt"), 9), 81);
-        assert_eq!(part_1(include_str!("../res/18.txt"), 26), 0);
+        assert_eq!(part_1(include_str!("../res/18.txt"), 26), 4420);
     }
 }
