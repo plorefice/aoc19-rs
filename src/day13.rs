@@ -1,7 +1,6 @@
 use crate::intcode::*;
 
 use std::convert::TryFrom;
-use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
 enum Tile {
@@ -27,29 +26,15 @@ impl TryFrom<Word> for Tile {
     }
 }
 
-impl fmt::Display for Tile {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Tile::Empty => " ",
-                Tile::Wall => "█",
-                Tile::Block => "░",
-                Tile::Paddle => "-",
-                Tile::Ball => "O",
-            }
-        )
-    }
-}
+type Point = (i64, i64);
 
 #[derive(Debug)]
 struct Game {
     code: Intcode,
     grid: Vec<Tile>,
-    bounds: (usize, usize),
-    paddle: (usize, usize),
-    ball: (usize, usize),
+    bounds: Point,
+    paddle: Point,
+    ball: Point,
     score: Word,
 }
 
@@ -72,13 +57,8 @@ impl Game {
         self.code.push_input(0);
 
         while self.update() {
-            self.code.push_input(if self.paddle.0 > self.ball.0 {
-                -1
-            } else if self.paddle.0 < self.ball.0 {
-                1
-            } else {
-                0
-            });
+            self.code
+                .push_input((self.ball.0 - self.paddle.0).signum() as Word);
         }
     }
 
@@ -88,21 +68,18 @@ impl Game {
         // First iteration -> compute grid size and allocate grid
         if self.bounds == (0, 0) {
             self.bounds = outs.chunks_exact(3).fold((0, 0), |(w, h), out| {
-                (
-                    ((out[0] + 1) as usize).max(w),
-                    ((out[1] + 1) as usize).max(h),
-                )
+                (((out[0] + 1) as i64).max(w), ((out[1] + 1) as i64).max(h))
             });
-            self.grid = vec![Tile::Empty; self.bounds.0 * self.bounds.1];
+            self.grid = vec![Tile::Empty; (self.bounds.0 * self.bounds.1) as usize];
         }
 
         for out in outs.chunks_exact(3) {
-            let (x, y, tile) = (out[0] as usize, out[1] as usize, out[2]);
+            let (x, y, tile) = (out[0] as i64, out[1] as i64, out[2]);
 
-            if x == std::usize::MAX {
+            if x == -1 {
                 self.score = tile;
             } else {
-                let idx = y * self.bounds.0 + x;
+                let idx = (y * self.bounds.0 + x) as usize;
 
                 self.grid[idx] = Tile::try_from(tile).unwrap();
 
@@ -115,18 +92,6 @@ impl Game {
         }
 
         sc == StopCondition::NeedInput
-    }
-}
-
-impl fmt::Display for Game {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for y in 0..self.bounds.1 {
-            for x in 0..self.bounds.0 {
-                write!(f, "{}", self.grid[y * self.bounds.0 + x])?;
-            }
-            writeln!(f)?;
-        }
-        Ok(())
     }
 }
 
