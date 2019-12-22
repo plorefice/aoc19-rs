@@ -1,10 +1,9 @@
 use num::Integer;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-struct Point3(i64, i64, i64);
+pub struct Point3(i64, i64, i64);
 
-#[allow(unused)]
-fn part_1(mut ps: [Point3; 4]) -> i64 {
+pub fn part_1(mut ps: [Point3; 4]) -> i64 {
     let mut vs = [Point3(0, 0, 0); 4];
 
     for _ in 0..1000 {
@@ -37,8 +36,7 @@ fn part_1(mut ps: [Point3; 4]) -> i64 {
         .sum()
 }
 
-#[allow(unused)]
-fn part_2(mut ps: [Point3; 4]) -> usize {
+pub fn part_2(ps: [Point3; 4]) -> usize {
     let x = find_loop_iteration([ps[0].0, ps[1].0, ps[2].0, ps[3].0]);
     let y = find_loop_iteration([ps[0].1, ps[1].1, ps[2].1, ps[3].1]);
     let z = find_loop_iteration([ps[0].2, ps[1].2, ps[2].2, ps[3].2]);

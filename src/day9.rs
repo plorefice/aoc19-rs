@@ -1,12 +1,10 @@
 use crate::intcode::Intcode;
 
-#[allow(unused)]
-fn part_1(s: &str) -> i128 {
+pub fn part_1(s: &str) -> i128 {
     Intcode::new(s).inputs(&[1]).run().0[0]
 }
 
-#[allow(unused)]
-fn part_2(s: &str) -> i128 {
+pub fn part_2(s: &str) -> i128 {
     Intcode::new(s).inputs(&[2]).run().0[0]
 }
 

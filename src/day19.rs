@@ -5,8 +5,7 @@ use std::collections::HashMap;
 
 const N: Word = 100;
 
-#[allow(unused)]
-fn part_1(s: &str) -> usize {
+pub fn part_1(s: &str) -> usize {
     let ic = Intcode::new(s);
     let mut beam_size = 0;
 
@@ -21,8 +20,7 @@ fn part_1(s: &str) -> usize {
     beam_size
 }
 
-#[allow(unused)]
-fn part_2(s: &str) -> Word {
+pub fn part_2(s: &str) -> Word {
     let ic = Intcode::new(s);
     let mut cache = HashMap::new();
 
@@ -32,8 +30,8 @@ fn part_2(s: &str) -> Word {
     loop {
         let y = (yl + yr) / 2;
 
-        let (x0s, x0e) = *cache.entry(y).or_insert_with(|| find_ends(ic.clone(), y));
-        let (x1s, x1e) = *cache
+        let (_, x0e) = *cache.entry(y).or_insert_with(|| find_ends(ic.clone(), y));
+        let (x1s, _) = *cache
             .entry(y + n)
             .or_insert_with(|| find_ends(ic.clone(), y + n));
 

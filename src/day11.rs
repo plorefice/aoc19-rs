@@ -11,13 +11,11 @@ enum Direction {
 
 const DIRS: [Direction; 4] = [Direction::N, Direction::E, Direction::S, Direction::W];
 
-#[allow(unused)]
-fn part_1(s: &str) -> usize {
+pub fn part_1(s: &str) -> usize {
     paint(s, false).len()
 }
 
-#[allow(unused)]
-fn part_2(s: &str) -> &str {
+pub fn part_2(s: &str) -> &str {
     let hull = paint(s, true);
 
     let (x_min, y_min, x_max, y_max) = hull.keys().fold(

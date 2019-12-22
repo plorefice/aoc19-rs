@@ -1,10 +1,8 @@
-#[allow(unused)]
-fn part_1(min: u32, max: u32) -> usize {
+pub fn part_1(min: u32, max: u32) -> usize {
     (min..=max).filter(|&c| validate(c, false)).count()
 }
 
-#[allow(unused)]
-fn part_2(min: u32, max: u32) -> usize {
+pub fn part_2(min: u32, max: u32) -> usize {
     (min..=max).filter(|&c| validate(c, true)).count()
 }
 

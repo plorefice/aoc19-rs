@@ -1,14 +1,12 @@
 use std::str::FromStr;
 
-#[allow(unused)]
-fn part_1(s: &str) -> i32 {
+pub fn part_1(s: &str) -> i32 {
     s.lines()
         .map(|s| fuel_for_mass(i32::from_str(s).unwrap()))
         .sum()
 }
 
-#[allow(unused)]
-fn part_2(s: &str) -> i32 {
+pub fn part_2(s: &str) -> i32 {
     s.lines()
         .map(|s| total_fuel(i32::from_str(s).unwrap()))
         .sum()

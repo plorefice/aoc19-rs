@@ -1,5 +1,4 @@
-#[allow(unused)]
-fn part_1(s: &str) -> String {
+pub fn part_1(s: &str) -> String {
     let mut phases = s
         .chars()
         .map(|c| c.to_digit(10).unwrap() as i64)
@@ -33,8 +32,7 @@ fn part_1(s: &str) -> String {
         .collect()
 }
 
-#[allow(unused)]
-fn part_2(s: &str, off: usize) -> String {
+pub fn part_2(s: &str, off: usize) -> String {
     let phases = s
         .chars()
         .map(|c| c.to_digit(10).unwrap() as i64)

@@ -5,8 +5,7 @@ type Pos = (i32, i32);
 #[derive(Debug)]
 struct Move(char, i32);
 
-#[allow(unused)]
-fn part_1(s: &str) -> i32 {
+pub fn part_1(s: &str) -> i32 {
     let (fst, snd) = parse_paths(s);
 
     let mut min_dist = std::i32::MAX;
@@ -25,8 +24,7 @@ fn part_1(s: &str) -> i32 {
     min_dist
 }
 
-#[allow(unused)]
-fn part_2(s: &str) -> i32 {
+pub fn part_2(s: &str) -> i32 {
     let (fst, snd) = parse_paths(s);
 
     let mut fst_steps = 0;

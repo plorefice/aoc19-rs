@@ -1,15 +1,13 @@
 use crate::intcode::Intcode;
 
-#[allow(unused)]
-fn part_1(s: &str) -> i64 {
+pub fn part_1(s: &str) -> i64 {
     let mut ic = Intcode::new(s).update(1, 12).update(2, 2);
     ic.run();
     ic.value(0) as i64
 }
 
-#[allow(unused)]
-fn part_2(s: &str) -> i64 {
-    let mut ic = Intcode::new(s);
+pub fn part_2(s: &str) -> i64 {
+    let ic = Intcode::new(s);
 
     for noun in 0..=99 {
         for verb in 0..=99 {

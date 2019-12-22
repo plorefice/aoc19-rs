@@ -3,8 +3,7 @@ use std::str::FromStr;
 
 type Reactions<'a> = HashMap<&'a str, (u128, Vec<(&'a str, u128)>)>;
 
-#[allow(unused)]
-fn part_1(s: &str) -> u128 {
+pub fn part_1(s: &str) -> u128 {
     let reactions = parse_reactions(s);
     let mut chems = vec![("FUEL", 1)];
 
@@ -12,12 +11,11 @@ fn part_1(s: &str) -> u128 {
     ore_per_raw_mats(&reactions, &chems)
 }
 
-#[allow(unused)]
-fn part_2(s: &str) -> u128 {
+pub fn part_2(s: &str) -> u128 {
     let reactions = parse_reactions(s);
 
     let (mut l, mut r) = (1, 100_000_000);
-    let mut ore = 0;
+    let mut ore;
 
     while r - l > 1 {
         let mut chems = vec![("FUEL", (l + r) / 2)];

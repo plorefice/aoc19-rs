@@ -1,7 +1,6 @@
 use crate::intcode::Intcode;
 
-#[allow(unused)]
-fn part_1(s: &str) -> i64 {
+pub fn part_1(s: &str) -> i64 {
     let out = Intcode::new(s).inputs(&[1]).run().0;
 
     if out[..out.len() - 2].iter().any(|e| *e != 0) {
@@ -11,8 +10,7 @@ fn part_1(s: &str) -> i64 {
     *out.last().unwrap() as i64
 }
 
-#[allow(unused)]
-fn part_2(s: &str) -> i64 {
+pub fn part_2(s: &str) -> i64 {
     Intcode::new(s).inputs(&[5]).run().0[0] as i64
 }
 

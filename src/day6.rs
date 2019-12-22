@@ -2,15 +2,13 @@ use std::collections::HashMap;
 
 type OrbitMap<'a> = HashMap<&'a str, &'a str>;
 
-#[allow(unused)]
-fn part_1(s: &str) -> u64 {
+pub fn part_1(s: &str) -> u64 {
     let map = parse_orbit_map(s);
 
     map.keys().map(|k| path_to_com(&map, k).len() as u64).sum()
 }
 
-#[allow(unused)]
-fn part_2(s: &str) -> u64 {
+pub fn part_2(s: &str) -> u64 {
     let map = parse_orbit_map(s);
 
     let you = path_to_com(&map, "YOU");

@@ -26,15 +26,13 @@ impl fmt::Display for Tile {
     }
 }
 
-#[allow(unused)]
-fn part_1(s: &str) -> usize {
+pub fn part_1(s: &str) -> usize {
     let (maze, tgt) = discover_maze(Intcode::new(s));
 
     bfs(&maze, (0, 0))[&tgt]
 }
 
-#[allow(unused)]
-fn part_2(s: &str) -> usize {
+pub fn part_2(s: &str) -> usize {
     let (maze, tgt) = discover_maze(Intcode::new(s));
 
     *bfs(&maze, tgt).values().max().unwrap()

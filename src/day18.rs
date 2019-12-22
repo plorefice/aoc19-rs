@@ -127,8 +127,7 @@ impl Maze {
     }
 }
 
-#[allow(unused)]
-fn part_1(s: &str, keys: usize) -> isize {
+pub fn part_1(s: &str, keys: usize) -> isize {
     Maze::from(s, keys).solve().unwrap()
 }
 

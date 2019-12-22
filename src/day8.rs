@@ -5,8 +5,7 @@ use itertools::Itertools;
 const W: usize = 25;
 const H: usize = 6;
 
-#[allow(unused)]
-fn part_1(s: &str) -> u64 {
+pub fn part_1(s: &str) -> u64 {
     let layer = s
         .as_bytes()
         .chunks(W * H)
@@ -20,8 +19,7 @@ fn part_1(s: &str) -> u64 {
         .unwrap()
 }
 
-#[allow(unused)]
-fn part_2(s: &str) -> &str {
+pub fn part_2(s: &str) -> &str {
     let layers = s.as_bytes().chunks(W * H).collect::<Vec<_>>();
 
     for h in 0..H {

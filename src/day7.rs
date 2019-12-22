@@ -2,8 +2,7 @@ use itertools::Itertools;
 
 use crate::intcode::{Intcode, StopCondition};
 
-#[allow(unused)]
-fn part_1(s: &str) -> i64 {
+pub fn part_1(s: &str) -> i64 {
     let ic = Intcode::new(s);
     let mut thrust = 0;
 
@@ -18,8 +17,7 @@ fn part_1(s: &str) -> i64 {
     thrust as i64
 }
 
-#[allow(unused)]
-fn part_2(s: &str) -> i64 {
+pub fn part_2(s: &str) -> i64 {
     let ic = Intcode::new(s);
     let mut thrust = 0;
 

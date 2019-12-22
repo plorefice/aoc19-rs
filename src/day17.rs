@@ -1,7 +1,6 @@
 use crate::intcode::*;
 
-#[allow(unused)]
-fn part_1(s: &str) -> isize {
+pub fn part_1(s: &str) -> isize {
     let (scaffolds, w, h) = find_scaffolding(s);
 
     let mut align_param = 0;
@@ -31,8 +30,7 @@ fn part_1(s: &str) -> isize {
     align_param
 }
 
-#[allow(unused)]
-fn part_2(s: &str) -> Word {
+pub fn part_2(s: &str) -> Word {
     // Computed by hand by simply following a straight path
     let (outs, _) = Intcode::new(s)
         .update(0, 2)

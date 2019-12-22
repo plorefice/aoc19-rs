@@ -1,8 +1,7 @@
 use itertools::Itertools;
 use num::Integer;
 
-#[allow(unused)]
-fn part_1(s: &str) -> usize {
+pub fn part_1(s: &str) -> usize {
     let map = Map::new(s);
 
     let mut max_asteroids_seen = std::usize::MIN;
@@ -25,8 +24,7 @@ fn part_1(s: &str) -> usize {
     max_asteroids_seen
 }
 
-#[allow(unused)]
-fn part_2(s: &str) -> usize {
+pub fn part_2(s: &str) -> usize {
     let tgt = Map::new(s)
         .seen(22, 28)
         .into_iter()

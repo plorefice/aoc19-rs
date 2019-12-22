@@ -95,8 +95,7 @@ impl Game {
     }
 }
 
-#[allow(unused)]
-fn part_1(s: &str) -> usize {
+pub fn part_1(s: &str) -> usize {
     Game::create(s)
         .grid
         .iter()
@@ -104,8 +103,7 @@ fn part_1(s: &str) -> usize {
         .count()
 }
 
-#[allow(unused)]
-fn part_2(s: &str) -> Word {
+pub fn part_2(s: &str) -> Word {
     let mut game = Game::create(s);
     game.play();
     game.score

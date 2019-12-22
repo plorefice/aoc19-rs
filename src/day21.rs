@@ -1,7 +1,6 @@
 use crate::intcode::*;
 
-#[allow(unused)]
-fn part_1(s: &str) -> Word {
+pub fn part_1(s: &str) -> Word {
     let mut ic = Intcode::new(s).inputs(
         &[
             "NOT A T", "OR T J", "NOT C T", "AND D T", "OR T J", "WALK\n",
@@ -15,8 +14,7 @@ fn part_1(s: &str) -> Word {
     *ic.run().0.last().unwrap()
 }
 
-#[allow(unused)]
-fn part_2(s: &str) -> Word {
+pub fn part_2(s: &str) -> Word {
     let mut ic = Intcode::new(s).inputs(
         &[
             "NOT B T", "AND D T", "OR T J", "NOT A T", "AND D T", "OR T J", "NOT C T", "AND D T",

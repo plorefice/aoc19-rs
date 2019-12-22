@@ -11,15 +11,13 @@ type Point = (usize, usize);
 type Maze = HashMap<Point, Tile>;
 type Teleports = HashMap<(Tile, bool), Point>;
 
-#[allow(unused)]
-fn part_1(s: &str) -> isize {
+pub fn part_1(s: &str) -> isize {
     let (m, tps, start, end) = parse_maze(s);
 
     shortest_path(&m, &tps, start, end).unwrap() - 1
 }
 
-#[allow(unused)]
-fn part_2(s: &str) -> isize {
+pub fn part_2(s: &str) -> isize {
     let (m, tps, start, end) = parse_maze(s);
 
     shortest_path_with_level(&m, &tps, start, end).unwrap() - 1
